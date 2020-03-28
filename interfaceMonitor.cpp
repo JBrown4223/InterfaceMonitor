@@ -51,4 +51,222 @@ int main(int argc, char *argv[]) {
 	}
 	
 	isRunning = true; 
+		while (isRunning) {
+		//Step 1: Send Message(Ping) to network monitor
+		string ping = "Ready to monitor";
+		rxBuff = write(fd, ping.c_str(), sizeof(ping.c_str() + 1));
+		if (rxBuff == -1)
+			cout << "Failed to send " << strerror(errno) << endl;
+
+		//Step 2: Recieve message to Monitor
+		rc = read(fd, buf, sizeof(buf));
+		if (rc > 0) {
+			if (strncmp("Monitor", buf, 5) == 0) {
+				string ping = "Monitoring";
+				rxBuff = write(fd, ping.c_str(), sizeof(ping.c_str() + 1));
+				if (rxBuff == -1)
+					cout << "Failed to send " << strerror(errno) << endl;
+			}
+		}
+		else
+			cout << "Failed to recieve message from buffer..." << endl;
+
+		//Step 4: Recieve and Open Interface
+		interFace+argv[2];
+		/*
+			The following blocks of code do the same thing:
+			1 - open the specified file for reading
+			2 - read the line
+			3 -send the contents over the socket to the network monitor
+
+		*/
+		//Operstate
+		string fileName = interFace + "/operstate";
+		char fileBuff[10];
+		size_t r;
+		if(readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			cout << "Error opening file " << strerror(errno) << endl;
+		else
+		 r = read(readFd, fileBuff,10);
+		 if (r == -1) 
+			cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else 
+				 close(readFd); 
+			 
+		 }
+
+		
+		//carrier_up_count
+		 string fileName = interFace + "/carrier_up_count";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 2);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+		 }
+
+		 //carrier_down_count
+		 string fileName = interFace + "/carrier_down_count";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 2);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
+
+		 //rx_bytes
+		 string fileName = interFace + "/statistics/rx_bytes";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 10);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
+
+		 //rx_dropped
+		 string fileName = interFace + "/statistics/rx_dropped";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 10);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
+
+		 //rx_errors
+		 string fileName = interFace + "/statistics/rx_errors";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 10);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
+
+		 //rx_packets
+		 string fileName = interFace + "/statistics/rx_packets";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 10);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
+
+		 //tx_bytes
+		 string fileName = interFace + "/statistics/tx_bytes";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 10);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
+
+		 //tx_errors
+		 string fileName = interFace + "/statistics/tx_errors";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 10);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
+
+		 //tx_packets
+		 string fileName = interFace + "/statistics/tx_packets";
+		 char fileBuff[10];
+		 size_t r;
+		 if (readFd = open(fileName.c_str(), O_RDONLY) == -1)
+			 cout << "Error opening file " << strerror(errno) << endl;
+		 else
+			 r = read(readFd, fileBuff, 10);
+		 if (r == -1)
+			 cout << "Error reading file " << strerror(errno) << endl;
+		 else {
+			 rxBuff = write(fd, fileBuff, sizeof(fileBuff));
+			 if (rxBuff == -1)
+				 cout << "Failed to send " << strerror(errno) << endl;
+			 else
+				 close(readFd);
+
+		 }
 }
