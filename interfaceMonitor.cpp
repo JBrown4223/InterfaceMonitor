@@ -14,14 +14,23 @@
 using namespace std; 
 
 char socket_path[] = "/tmp"
+const int BUF_LEN = 100; 
+bool isRunning = false; 
+
 
 int main(int argc, char *argv[]) {
 	
+	
 	// variable declaration 
 	struct sockaddr_un addr; 
-	char buf[100]; 
+	char buf[BUF_LEN]; 
 	int fd, cl, rc, len, ret; 
-	bool isRunning = true; 
+	
+	// Make sure user provides interface name 
+	if (argc < 2) {
+		cout << "Error: No interface name provided" << endl; 
+		exit(-1); 
+	}
 	
 	// Create a socket 
 	if ((fd = socket ( AF_UNIX, SOCK_STREAM, 0)) < 0 ) {
@@ -50,5 +59,7 @@ int main(int argc, char *argv[]) {
 		unlink(socket_path); 
 		close(fd); 
 		exit(-1); 
-	}	
+	}
+	
+	
 }
