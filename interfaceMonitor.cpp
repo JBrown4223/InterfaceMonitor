@@ -19,12 +19,10 @@ bool isRunning = false;
 
 
 int main(int argc, char *argv[]) {
-	
-	
 	// variable declaration 
 	struct sockaddr_un addr; 
 	char buf[BUF_LEN]; 
-	int fd, cl, rc, len, ret; 
+	int fd; 
 	
 	// Make sure user provides interface name 
 	if (argc < 2) {
@@ -33,9 +31,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	// Create a socket 
-	if ((fd = socket ( AF_UNIX, SOCK_STREAM, 0)) < 0 ) {
+	if ((fd = socket (AF_UNIX, SOCK_STREAM, 0)) < 0 ) {
 		cout << "Error with creation of socket" << endl; 
-		cout << "server: " << strerror(errno) << endl; 
+		cout << "client: " << strerror(errno) << endl; 
 		exit(-1); 
 	}
 	
@@ -43,23 +41,14 @@ int main(int argc, char *argv[]) {
 	memset(&addr, 0, sizeof(addr)); 
 	addr.sun_family = AF_UNIX; 
 	strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path)-1); 
-	unlink(socket_path); 
 	
-	// Bind the socket to this local socket file 
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-		cout << "Error with binding the socket" << endl; 
-		cout << "server: " << strerror(errno) << endl; 
+	// connecting to the local socket 
+	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+		cout << "Error with connecting the socket" << endl; 
+		cout << "client: " << strerror(errno) << endl; 
 		close(fd); 
-		exit(-1); 
+		exit(-1); 	
 	}
 	
-	// Listen for a connection to this local socket file 
-	if (listen(fd, 5) < 0) {
-		cout << "server: " << strerror(errno) << endl; 
-		unlink(socket_path); 
-		close(fd); 
-		exit(-1); 
-	}
-	
-	
+	isRunning = true; 
 }
