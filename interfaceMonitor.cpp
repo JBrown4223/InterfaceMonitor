@@ -290,4 +290,6 @@ int main(int argc, char *argv[]) {
 				 close(readFd);
 
 		 }
+	
+	return 0;
 }
