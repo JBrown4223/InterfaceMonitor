@@ -11,18 +11,31 @@
 #include <sys/socket.h> 
 #include <sys/un.h> 
 #include <stdlib.h> 
+#include <signal.h> 
 using namespace std; 
 
 char socket_path[] = "/tmp"
 const int BUF_LEN = 100; 
 bool isRunning = false; 
+static volatile sig_atomic_t gotSigint = 0; 
+
+static void signalHandler(int signum) 
+{
+	switch(signum) {
+		case SIGINT: 
+			gotSigint = 1;  
+		default: 
+			cout << "signalHandler("<<signum<<"): unknown" << endl; 
+	}
+	
+}
 
 
 int main(int argc, char *argv[]) {
 	// variable declaration 
 	struct sockaddr_un addr; 
 	char buf[BUF_LEN]; 
-	int fd; 
+	int fd, len, ret; 
 	
 	// Make sure user provides interface name 
 	if (argc < 2) {
@@ -57,9 +70,10 @@ int main(int argc, char *argv[]) {
 		rxBuff = write(fd, ping.c_str(), sizeof(ping.c_str() + 1));
 		if (rxBuff == -1)
 			cout << "Failed to send " << strerror(errno) << endl;
-
+			
 		//Step 2: Recieve message to Monitor
 		rc = read(fd, buf, sizeof(buf));
+		signal(SIGINT, signalHandler); 
 		if (rc > 0) {
 			if (strncmp("Monitor", buf, 5) == 0) {
 				string ping = "Monitoring";
@@ -67,10 +81,18 @@ int main(int argc, char *argv[]) {
 				if (rxBuff == -1)
 					cout << "Failed to send " << strerror(errno) << endl;
 			}
+			// if the Monitor sends "Shut Down" or there is a SIGINT 
+			else if (strncmp("Shut Down", buf, 9) == 0 || gotSigint == 1){ 
+				len = sprintf(buf, "Done") + 1; 
+				ret = write(fd, buf, len);
+				close(fd); 
+				exit(-1); 
+			}				
 		}
 		else
 			cout << "Failed to recieve message from buffer..." << endl;
 
+		
 		//Step 4: Recieve and Open Interface
 		interFace+argv[2];
 		/*
@@ -78,7 +100,6 @@ int main(int argc, char *argv[]) {
 			1 - open the specified file for reading
 			2 - read the line
 			3 -send the contents over the socket to the network monitor
-
 		*/
 		//Operstate
 		string fileName = interFace + "/operstate";
