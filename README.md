@@ -2,6 +2,10 @@
 
 ## Questions
 
+### 1.	In a few sentences, describe the general architecture of your interface monitor. [1 mark]
+
+The interface monitor follows a client-based architecture. It creates a socket and connects to the network monitor. Once the interface monitor is connected with the network monitor, it sends a message to the network monitor to let it know that its ready to monitor. The interface monnitor and network monitor send messages back and forth to obtain/display the required data.  When the network monitor sends a message, "Shut Down" or a SIGINT, the interface monitor will safely quit and shut down. 
+
 ### 3.	Could the interface monitor and network monitor all be contained within one process, if so how? [1 mark]
 
 
