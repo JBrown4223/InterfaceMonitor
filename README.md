@@ -23,4 +23,3 @@ Control Layer = Responsible for making decisions on how packets should be forwar
 
 Forwarding Layer = Responsible for handling data packets based on the instructions received from the control plane. Actions of the forwarding plane include, but are not limited to, forwarding, dropping, and changing packets. Examples of forwarding resources are classifiers, meters, etc. The forwarding plane is also widely referred to as the "data plane" or the "data path".
 
-https://sdn.ieee.org/newsletter/september-2017/overview-of-rfc7426-sdn-layers-and-architecture-terminology
