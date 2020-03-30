@@ -14,7 +14,7 @@ A interface monitor and network monitor can be contained in one process with the
 
 
 ### 4.	Could the interface monitor and network monitor all be contained within one process, assuming 128 network interfaces running at several Giga-bits per second, which require a polling interval of one millisecond per interface. [1 mark]
-
+No, I dont believe it can. Even if we were to use threads, threads are competing for a finite virtual address space of the host process. Threads local storage consumes a part of the process virtual address space. Even though the available virtual address space is large, there is significant limitations for processes employing large number of threads or threads that require large amounts of memory. 128 network interfaces running at several Giga-bits per second, which require a polling interval of one millisecond per interface would be considered to require large amounts of memory. 
 
 
 ### 5.	What is a software defined network? In doing so, describe the applications layer, the control layer, and the forwarding layer. [2 marks]
