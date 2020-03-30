@@ -7,7 +7,9 @@
 The interface monitor follows a client-based architecture. It creates a socket and connects to the network monitor. Once the interface monitor is connected with the network monitor, it sends a message to the network monitor to let it know that its ready to monitor. The interface monnitor and network monitor send messages back and forth to obtain/display the required data.  When the network monitor sends a message, "Shut Down" or a SIGINT, the interface monitor will safely quit and shut down. 
 
 ### 3.	Could the interface monitor and network monitor all be contained within one process, if so how? [1 mark]
+A interface monitor and network monitor can be contained in one process with the use of multithreads. The network monitor needs to continuously listen to the socket it is connected to. The interface monitor would run on its own thread so sending data won't block the execution of the main application.   
 
+(MAYBE? I am not sure) 
 
 
 
