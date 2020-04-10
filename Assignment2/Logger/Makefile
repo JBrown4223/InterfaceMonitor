@@ -7,9 +7,9 @@ FILES+=TravelSimulator.cpp
 LIBS=-lpthread
 
 travel: $(FILES)
-        $(CC) $(CFLAGS) $^ -o $@ $(LIBS) 
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS) 
         
-clean: 
-        rm -f *.o travel 
+clean:
+	rm -f *.o travel 
         
-all: travel
+all:travel
