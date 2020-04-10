@@ -1,4 +1,7 @@
 
+#ifndef LOGGER_H
+#define LOGGER_H
+
 #include <iostream>
 
 using namespace std;
@@ -16,3 +19,5 @@ typedef enum LOG_LEVEL {
     ERROR,
     CRITICAL
 } LOG_LEVEL;
+
+#endif//LOGGER_H
