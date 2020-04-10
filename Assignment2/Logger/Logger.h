@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const char FILENAME[]="../Server/FileLog.txt";
+const char FILENAME[]="../Server/LogFile.txt";
 
 int InitializeLog();
 void SetLogLevel(LOG_LEVEL level);
