@@ -12,7 +12,7 @@ rsyslog - RSYSLOG is the rocket-fast system for log processing. It offers high-p
   1. 
 
 
-
+#INCOMPLETE 
 
 
 
@@ -32,12 +32,14 @@ rsyslog - RSYSLOG is the rocket-fast system for log processing. It offers high-p
 5. Forward logs to big data tools (like Elasticsearch, Apache Kafka, or Apache Hadoop)
 6. Receive and send RFC3164 and RFC5424 style syslog messages
 
+#COMPLETED 
+
 ### 3.	Name five ways syslog-ng is an improvement over syslog/rsyslog.
 
 1. syslog-ng has the ability to classify, tag, and correlate log messages in real-time
 2. 
 
-
+#INCOMPLETE 
 
 
 
