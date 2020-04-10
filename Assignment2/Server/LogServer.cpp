@@ -22,17 +22,17 @@ int main(void)
   char buf[BUF_LEN]; 
   
   //Set up a signal handler to terminate the program gracefully
-	struct sigaction terminate;
-	terminate.sa_handler = signalHandler;
-	sigemptyset(&terminate.sa_mask);
-	terminate.sa_flags = 0;
-	sigaction(SIGINT, &terminate, NULL);
+  struct sigaction terminate;
+  terminate.sa_handler = signalHandler;
+  sigemptyset(&terminate.sa_mask);
+  terminate.sa_flags = 0;
+  sigaction(SIGINT, &terminate, NULL);
   
    //creating and binding a socket to a temp socket file
-	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		cout << "Cannot bind socket for master file descriptor: " << strerror(errno) << endl;
-		exit(-1);
-	}
+  if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	cout << "Cannot bind socket for master file descriptor: " << strerror(errno) << endl;
+	exit(-1);
+  }
   
   memset(&addr, 0, sizeof(addr));
   myaddr.sin_family = AF_INET; 
