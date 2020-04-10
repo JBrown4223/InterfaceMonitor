@@ -17,7 +17,7 @@ typedef enum LOG_LEVEL {
 
 class Logger {
     private:
-     
+        
     public:
        int InitializeLog();
        void SetLogLevel(LOG_LEVEL level);
