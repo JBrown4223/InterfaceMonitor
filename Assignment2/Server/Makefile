@@ -6,9 +6,9 @@ FILES=LogServer.cpp
 LIBS=-lpthread
 
 LogServer: $(FILES)
-        $(CC) $(CFLAGS) $^ -o $@ $(LIBS) 
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS) 
         
-clean: 
-        rm -f *.o LogServer 
+clean:
+	rm -f *.o LogServer 
         
-all: LogServer
+all:LogServer
