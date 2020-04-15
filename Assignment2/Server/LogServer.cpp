@@ -45,7 +45,7 @@ static void signalHandler(int signum) {
 int main(void)
 {
 
-	int masterSocket, fd, cl, ret, c, len, * new_sock;
+	int masterSocket, fd, ret, c, len, * new_sock;
 	struct sockaddr_in addr, clientAddr;
 	char buf[BUF_LEN];
 
@@ -55,27 +55,6 @@ int main(void)
 	sigemptyset(&terminate.sa_mask);
 	terminate.sa_flags = 0;
 	sigaction(SIGINT, &terminate, NULL);
-
-	//Recieve Function for thread mutex
-	void* recv_func(void* arg)
-	{
-		int fd1 = *(int*)arg;
-		socklen_t addrlen = sizeof(remaddr);
-		char buf[100];
-
-		cout << "server: read()" << endl;
-		while (is_running) {
-			memset(buf, 0, 100);
-			int len = recvfrom(fd, buf, BUF_LEN, 0, (struct sockaddr*) & remaddr, &addrlen);
-			cout << "received " << len << " bytes from " << inet_ntoa(remaddr.sin_addr) << endl;
-
-			cout << "received message: " << buf << endl;
-			pthread_mutex_lock(&lock_x);
-			message.push(buf);
-			pthread_mutex_unlock(&lock_x);
-		}
-	   pthread_exit(NULL);
-    }
 
 	
   memset(&addr, 0, sizeof(addr));
@@ -118,27 +97,86 @@ int main(void)
 	  close(fd);
 	  return -1;
   }
+ pthread_mutex_init(&lock_x, NULL);
 
-  //User Selection
-  bool selection = false;
+ pthread_mutex_lock(&lock_x);
+  bool isOnline = true;
   int select = -1;
+  char x;
   do {
+
+
+
+	  //User Selection
 	  cout << "Make a Selection..." << endl;
 	  cout << "2: Dump the log file here" << endl;
-	  cout << " 1: Set the log level" << endl;
+	  cout << "1: Set the log level" << endl;
 	  cout << "0: Shutdown" << endl;
 	  cin >> select;
 
-	  if (select > 0)
-		  selection = true;
+
+	  if (select == 1) {
+		  //Set Log Level
+		  memset(buf, 0, BUF_LEN);
+		  len = sprintf(buf, "Set Log Level=%d", level) + 1;
+		  sendto(fd, buf, len, 0, (struct sockaddr*) & remaddr, addrlen);
+		  
+
+	  }
+	  else if (select == 2) {
+		  //Dump the log file here
+		  c = open('./LogFile.txt', O_RDONLY);
+		  if (c == -1)
+			  cout << strerror(errno) << endl;
+
+		  int r = read(c, buf, BUF_LEN);
+		  if (r == -1)
+			  cout << strerror(errno) << endl;
+		  cout << buf << endl;
+		  cout << "Press any key to continue: ";
+		  cin >> x >> endl;
+
+
+	  }
+	  else if (select == 0) {
+
+		  is_running = false
+			  online = false
+
+
+	  }
 	  else
-		  cout <<" invailid selections..."<< endl;
-
-  } while (!selection);
+		  cout << "Invalid Selection....Try Again" << endl;
+	
   
+  } while (isOnline);
+  pthread_join(tid, NULL);
+  close(fd);
+  pthread_close(NULL);
 
 
 
+  //Recieve Function for thread mutex
+  void* recv_func(void* arg)
+  {
+	  int fd1 = *(int*)arg;
+	  int writeFD, openFD;
+	  socklen_t addrlen = sizeof(remaddr);
+	  char buf[100];
+
+	  cout << "Recieve Thread: " << endl;
+	  while (is_running) {
+		  memset(buf, 0, 100);
+		  int len = recvfrom(fd1, buf, BUF_LEN, 0, (struct sockaddr*) & remaddr, &addrlen);
+		  cout << "received " << len << " bytes from " << inet_ntoa(remaddr.sin_addr) << endl;
+		  openFD = open('./LogFile.txt', O_WRONLY, O_CREAT, O_TRUNC);
+		  if (writeFD == -1)
+			  cout << strerror(errno) << endl;
+		  pthread_mutex_lock(&lock_x);
+		  writeFD = write(openFD, buf, sizeof(buf));
+		  pthread_mutex_unlock(&lock_x);
+	  }
+  }
  
 
   return 0;
