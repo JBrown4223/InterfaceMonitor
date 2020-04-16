@@ -1,33 +1,42 @@
+#include <arpa/inet.h>
+#include <errno.h>
 #include <iostream>
-#include <queue>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <stdlib.h>
-#include <string>
-#include <iomanip>
 #include <fcntl.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <sys/wait.h>
-#include <signal.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
+#include <queue>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <signal.h>
+#include <sys/ipc.h>
+#include <sys/socket.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 using namespace std; 
 
 const int PORT=1153; 
-const char IP_ADDR[]="192.168.205.134"; 
-const int BUF_LEN = 256;
+const char IP_ADDR[] = "127.0.0.1";
+const int BUF_LEN = 4096;
 bool isOnline;
 struct sockaddr_in remaddr;
 
+queue<string>messages;
+
 void* recv_func(void* arg);
 pthread_mutex_t lock_x;
+
+
+int masterSocket, ret, len;
+struct sockaddr_in clientAddr;
+socklen_t addrlen = sizeof(remaddr);
+char buf[BUF_LEN];
 
 
 //implementation of signal handler to exit program gracefully
@@ -42,12 +51,12 @@ static void signalHandler(int signum) {
 	}
 } 
 
+
+
 int main(void)
 {
 
-	int masterSocket, fd, ret, c, len, * new_sock;
-	struct sockaddr_in addr, clientAddr;
-	char buf[BUF_LEN];
+	
 
 	//Set up a signal handler to terminate the program gracefully
 	struct sigaction terminate;
@@ -57,50 +66,39 @@ int main(void)
 	sigaction(SIGINT, &terminate, NULL);
 
 	
-  memset(&addr, 0, sizeof(addr));
+  memset(&clientAddr, 0, sizeof(clientAddr));
    //creating and binding a socket to a temp socket file
-  if ((masterSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+  masterSocket = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
+  if(masterSocket == -1){
 	cout << "Cannot bind socket for master file descriptor: " << strerror(errno) << endl;
 	exit(-1);
   }
   
-  addr.sin_family = AF_INET; 
-  if ((ret = inet_pton(AF_INET, IP_ADDR, &addr.sin_addr)) < 1) {
-      cout << "No such address: " << strerror(errno) << endl; 
-      close(fd); 
-      exit(-1); 
-  }
-  addr.sin_port = htons(PORT); 
+  memset((char*)&clientAddr, 0, sizeof(clientAddr));
+  clientAddr.sin_family = AF_INET;
+
+  ret = inet_pton(AF_INET, IP_ADDR, &clientAddr.sin_addr);
   
-  if ((ret = bind(masterSocket, (struct sockaddr *)&addr, sizeof(addr))) < 0) {
+  ret = bind(masterSocket, (struct sockaddr*) & clientAddr, sizeof(clientAddr));
+  if(ret < 0){
       cout << "Cannot bind the socket to the local address: " << strerror(errno) << endl; 
       exit(-1); 
   }
-  //creation of recieve thread
-  memset((char*)&clientAddr, 0, sizeof(clientAddr));
-  clientAddr.sin_family = AF_INET;
-  ret = inet_pton(AF_INET, IP_ADDR, &clientAddr.sin_addr);
-  if (ret == 0) {
-	  cout << " No such address" << endl;
-	  cout << strerror(errno) << endl;
-	  close(fd);
-	  return -1;
-  }
-  clientAddr.sin_port = htons(encoder.ip_port);
+
 
   //Mutex thread creation
+  pthread_mutex_init(&lock_x, NULL);
   pthread_t tid;
-  ret = pthread_create(&tid, NULL, recv_func, &fd);
+  ret = pthread_create(&tid, NULL, recv_func, &masterSocket);
   if (ret != 0) {
 	  cout  << ": Cannot create receive thread" << endl;
 	  cout << strerror(errno) << endl;
-	  close(fd);
+	  close(masterSocket);
 	  return -1;
   }
- pthread_mutex_init(&lock_x, NULL);
 
- pthread_mutex_lock(&lock_x);
-  bool isOnline = true;
+
+  isOnline = true;
   int select = -1;
   char x;
   do {
@@ -115,71 +113,101 @@ int main(void)
 	  cin >> select;
 
 
-	  if (select == 1) {
+	  switch (select) {
+	  case 1:
+		  int level = -1;
+
+		  cout << "Choose a level of severity[(1) DEBUG, (2) WARNING, (3) ERROR, (4) CRITICAL]:  " << endl;
+		  cin >> level;
+
+
+
 		  //Set Log Level
 		  memset(buf, 0, BUF_LEN);
-		  len = sprintf(buf, "Set Log Level=%d", level) + 1;
-		  sendto(fd, buf, len, 0, (struct sockaddr*) & remaddr, addrlen);
-		  
+		  len = sprintf(buf, "Set Log Level=%d", level - 1) + 1;
+		  sendto(masterSocket, buf, len, 0, (struct sockaddr*) & remaddr, addrlen);
 
-	  }
-	  else if (select == 2) {
+		  break;
+
+	  case 2:
 		  //Dump the log file here
-		  c = open('./LogFile.txt', O_RDONLY);
-		  if (c == -1)
+		  FILE * fp;
+		  fp = fopen("LogFile.txt", "r");
+		  if (fp == NULL) {
+			  cout << "Cannot open syslog file" << endl;
 			  cout << strerror(errno) << endl;
+		  }
+		  else {
+			  memset(buf, 0, BUF_LEN);
 
-		  int r = read(c, buf, BUF_LEN);
-		  if (r == -1)
-			  cout << strerror(errno) << endl;
-		  cout << buf << endl;
-		  cout << "Press any key to continue: ";
-		  cin >> x >> endl;
+			  while (!feof(fp)) {
+				  fgets(buf, BUF_LEN, fp);
+				  puts(buf);
+			  }
+			  fclose(fp);
+		  }
 
+
+		  break;
+
+	  case 0:
+
+		  cout << "Shutting down" << endl;
+		  isOnline = false;
+		  break;
 
 	  }
-	  else if (select == 0) {
-
-		  is_running = false
-			  online = false
-
-
+	  if (select != 0) {
+		  char key;
+		  cout << "Press any key to continues: ";
+		  cin >> key;
+		  system("clear");
 	  }
-	  else
-		  cout << "Invalid Selection....Try Again" << endl;
-	
   
   } while (isOnline);
-  pthread_join(tid, NULL);
-  close(fd);
-  pthread_close(NULL);
-
-
-
-  //Recieve Function for thread mutex
-  void* recv_func(void* arg)
-  {
-	  int fd1 = *(int*)arg;
-	  int writeFD, openFD;
-	  socklen_t addrlen = sizeof(remaddr);
-	  char buf[100];
-
-	  cout << "Recieve Thread: " << endl;
-	  while (is_running) {
-		  memset(buf, 0, 100);
-		  int len = recvfrom(fd1, buf, BUF_LEN, 0, (struct sockaddr*) & remaddr, &addrlen);
-		  cout << "received " << len << " bytes from " << inet_ntoa(remaddr.sin_addr) << endl;
-		  openFD = open('./LogFile.txt', O_WRONLY, O_CREAT, O_TRUNC);
-		  if (writeFD == -1)
-			  cout << strerror(errno) << endl;
-		  pthread_mutex_lock(&lock_x);
-		  writeFD = write(openFD, buf, sizeof(buf));
-		  pthread_mutex_unlock(&lock_x);
-	  }
-  }
  
+  
+  pthread_join(tid, NULL);
+  close(masterSocket);
+  
+
+
 
   return 0;
  
+}
+
+//Recieve Function for thread mutex
+void* recv_func(void* arg) {
+	FILE* fp;
+	fp = fopen("LogFile.txt", "w");
+	if (fp == NULL) {
+		cout << "Can't open file" << endl;
+		cout << strerror(errno) << endl;
+	}
+	int fd1 = *(int*)arg;
+	int len;
+	socklen_t addrlen = sizeof(remaddr);
+	char buf[BUF_LEN];
+
+
+	memset(buf, 0, BUF_LEN);
+	cout << "Recieve Thread: " << endl;
+	while (isOnline) {
+		pthread_mutex_lock(&lock_x);
+		len = recvfrom(fd1, buf, BUF_LEN, 0, (struct sockaddr*) & remaddr, &addrlen) - 1;
+		pthread_mutex_unlock(&lock_x);
+
+		if (len < 0) {
+			sleep(1);
+		}
+		else {
+			fprintf(fp, "%s\n", buf);
+		}
+
+	}
+	fclose(fp);
+
+	pthread_exit(NULL);
 }
 
